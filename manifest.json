@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-boilerplate",
+	"name": "Obsidian Boilerplate",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "A boilerplate template for developing Obsidian plugins, featuring TypeScript, esbuild",
+	"author": "Adam Smith",
+	"authorUrl": "https://github.com/admjs",
+	"isDesktopOnly": false,
+	"repo": "admjs/obsidian-boilerplate"
+}
