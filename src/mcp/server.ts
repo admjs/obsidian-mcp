@@ -1,4 +1,12 @@
 import { App, TFile, TFolder } from 'obsidian';
+import { ListFilesInVaultToolHandler } from './tools/listFiles';
+import { GetFileContentsToolHandler } from './tools/getFileContents';
+import { SearchToolHandler } from './tools/search';
+import { AppendContentToolHandler } from './tools/appendContent';
+import { DeleteFileToolHandler } from './tools/deleteFile';
+import { ComplexSearchToolHandler } from './tools/complexSearch';
+import { PeriodicNotesToolHandler } from './tools/periodicNotes';
+import { RecentChangesToolHandler } from './tools/recentChanges';
 
 export interface Tool {
     name: string;
@@ -28,7 +36,7 @@ export interface EmbeddedResource {
 export type Content = TextContent | ImageContent | EmbeddedResource;
 
 export abstract class ToolHandler {
-    protected name: string;
+    public name: string;
 
     constructor(name: string) {
         this.name = name;
@@ -49,7 +57,19 @@ export class MCPServer {
     }
 
     private initializeTools() {
-        // We'll add tool handlers here
+        // Register all tool handlers
+        this.registerTool(new ListFilesInVaultToolHandler(this.app));
+        this.registerTool(new GetFileContentsToolHandler(this.app));
+        this.registerTool(new SearchToolHandler(this.app));
+        this.registerTool(new AppendContentToolHandler(this.app));
+        this.registerTool(new DeleteFileToolHandler(this.app));
+        this.registerTool(new ComplexSearchToolHandler(this.app));
+        this.registerTool(new PeriodicNotesToolHandler(this.app));
+        this.registerTool(new RecentChangesToolHandler(this.app));
+    }
+
+    private registerTool(handler: ToolHandler) {
+        this.tools.set(handler.name, handler);
     }
 
     public async listTools(): Promise<Tool[]> {
@@ -68,5 +88,9 @@ export class MCPServer {
             console.error(`Error running tool ${name}:`, error);
             throw error;
         }
+    }
+
+    public async handleToolCall(toolName: string, args: any): Promise<Content[]> {
+        return this.callTool(toolName, args);
     }
 } 

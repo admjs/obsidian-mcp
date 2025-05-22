@@ -1,11 +1,11 @@
 {
-	"id": "obsidian-boilerplate",
-	"name": "Obsidian Boilerplate",
+	"id": "obsidian-mcp",
+	"name": "MCP Server",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A boilerplate template for developing Obsidian plugins, featuring TypeScript, esbuild",
+	"description": "MCP server implementation as an Obsidian plugin, providing a standardized interface for MCP clients to interact with your notes",
 	"author": "Adam Smith",
 	"authorUrl": "https://github.com/admjs",
 	"isDesktopOnly": false,
-	"repo": "admjs/obsidian-boilerplate"
+	"repo": "admjs/obsidian-mcp"
 }
