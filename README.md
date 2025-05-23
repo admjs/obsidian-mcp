@@ -4,24 +4,53 @@ An Obsidian plugin that provides MCP (Model Context Protocol) server functionali
 
 ## Features
 
-- 🔐 **Secure Authentication**: API key-based authentication for secure connections
+- 🔐 **Authentication**: API key-based authentication for secure connections
 - 🌐 **HTTP Server**: Local HTTP server for MCP client communication
-- 🌉 **Bridge Script**: Included bridge script for seamless MCP protocol translation
+- 🌉 **Bridge Script**: Included bridge script for MCP protocol translation
 - ⚙️ **Auto-Configuration**: Automatic configuration generation for MCP clients
-- 🛠️ **Rich Tool Set**: Comprehensive tools for vault interaction
+- 🧠 **System Prompt**: Customizable AI system prompt that's automatically enforced
+- 🛠️ **Tool Set**: File operations, search, templates, and vault management tools
 - 🔄 **Real-time Communication**: Direct communication between MCP clients and Obsidian
 
 ## What is MCP?
 
 The Model Context Protocol (MCP) is a standardized way for AI assistants to connect to external data sources and tools. This plugin makes your Obsidian vault accessible to MCP-compatible AI clients like Claude Desktop.
 
+## System Prompt
+
+The system prompt defines how AI assistants interact with your Obsidian vault. It's automatically loaded when MCP clients connect to your vault.
+
+### How it works:
+- **Automatic Enforcement**: The system prompt is loaded through a required initialization tool
+- **First Tool Called**: MCP clients must call the `obsidian_init_required` tool before accessing any other vault tools
+- **Context Loading**: This initialization loads your custom system prompt as the AI's behavioral context
+- **Consistent Behavior**: All AI interactions follow your specified guidelines
+
+### System Prompt Enforcement:
+
+The system prompt is enforced through MCP's tool system:
+1. **Required Initialization**: The first tool (`obsidian_init_required`) must be called before any vault access
+2. **Automatic Loading**: This tool loads your custom system prompt as context
+3. **Behavioral Guidelines**: The AI receives your specific instructions for working with your vault
+4. **No Manual Steps**: This happens automatically in MCP clients
+
+### Workflow Integration:
+
+The system prompt works with other plugin features:
+- **Templates**: Reference your template directory and preferred template usage
+- **Search**: Guide how the AI should search and organize information
+- **File Operations**: Set rules for creating, modifying, and organizing files
+- **Periodic Notes**: Define how daily/weekly/monthly notes should be handled
+
 ## Available Tools
 
+- **Vault Initialization**: Required first tool (`obsidian_init_required`) that loads system prompt context
 - **File Operations**: List files, read content, append content, delete files
 - **Search**: Simple text search and complex metadata-based search  
 - **Periodic Notes**: Access daily, weekly, and monthly notes
 - **Recent Changes**: Get recently modified files
-- **Vault Management**: Comprehensive vault interaction capabilities
+- **Templates**: Access to note templates from your configured templates directory
+- **Vault Management**: Vault interaction capabilities
 
 ## Installation
 
@@ -53,8 +82,9 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to conn
 
 1. Open Obsidian Settings → MCP Plugin
 2. Set a secure API key
-3. Enable and start the HTTP server
-4. Note the bridge script path (automatically configured)
+3. **Configure System Prompt**: Edit the AI system prompt to match your workflow
+4. Enable and start the HTTP server
+5. Note the bridge script path (automatically configured)
 
 ### 2. Configure Your MCP Client
 
@@ -86,7 +116,14 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to conn
 }
 ```
 
-### 3. Restart Your MCP Client
+### 3. Start Using Your Vault
+
+Once configured, MCP clients can access your vault:
+1. **Automatic Initialization**: The first tool call loads your system prompt context
+2. **Guided Interactions**: The AI follows your custom workflow preferences
+3. **No Manual Steps**: System prompt enforcement happens automatically
+
+### 4. Restart Your MCP Client
 
 Restart Claude Desktop (or your MCP client) to load the new server configuration.
 
@@ -100,14 +137,24 @@ Restart Claude Desktop (or your MCP client) to load the new server configuration
 ## Configuration Options
 
 ### Basic Settings
-- **API Key**: Secure authentication key for HTTP server access
+- **API Key**: Authentication key for HTTP server access
 - **HTTP Server Port**: Port for the local HTTP server (default: 28734)
 - **Bridge Script Path**: Path to the bridge script (auto-configured)
 
+### System Prompt Configuration
+- **System Prompt**: Prompt that guides AI interactions with your vault
+- **Templates Directory**: Directory path for note templates (default: "Templates")
+- **Reset to Default**: Button to restore the default system prompt template
+
 ### Server Controls
 - **Enable/Disable HTTP Server**: Toggle server on/off
-- **Server Status**: Real-time server status display
+- **Server Status**: Current server status display
 - **Test Functions**: Built-in testing for server connectivity
+
+### Advanced Features
+- **Path Debug Information**: Diagnostic tool for troubleshooting path detection
+- **Configuration Generator**: Auto-generates MCP client configuration with detected paths
+- **Available Tools Display**: Shows all available MCP tools and their schemas
 
 ## Security
 
@@ -145,7 +192,21 @@ Restart Claude Desktop (or your MCP client) to load the new server configuration
 Use the built-in test functions in the plugin settings:
 - **Test MCP Server**: Verify the core MCP functionality
 - **Test HTTP Server**: Check HTTP server connectivity
+- **Test System Prompt**: Verify system prompt accessibility via MCP
 - **Show Available Tools**: Display all available tools and their schemas
+
+### System Prompt Issues
+
+1. **System prompt not loading in MCP client**
+   - Ensure the HTTP server is running
+   - Verify the system prompt is configured in plugin settings
+   - Test using the "Test System Prompt" button
+   - Try restarting your MCP client
+
+2. **AI not following custom guidelines**
+   - Make sure the initialization tool is being called first
+   - Check that your custom prompt is saved in the plugin settings
+   - Verify the prompt contains clear, specific instructions
 
 ## Development
 
@@ -202,14 +263,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 📖 **Documentation**: Check the plugin settings for detailed setup instructions
+- 📖 **Documentation**: Check the plugin settings for setup instructions
 - 🐛 **Issues**: Report bugs on [GitHub Issues](https://github.com/admjs/obsidian-mcp/issues)
 - 💡 **Feature Requests**: Suggest improvements via GitHub issues
 - 🔧 **Support**: Use the built-in test functions for troubleshooting
-
-## Roadmap
-
-- [ ] Submit to Obsidian Community Plugins store
-- [ ] Add more MCP tool implementations
-- [ ] Improve auto-configuration detection
-- [ ] Add plugin marketplace integration
