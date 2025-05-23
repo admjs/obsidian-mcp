@@ -23,21 +23,40 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to conn
 - **Recent Changes**: Get recently modified files
 - **Vault Management**: Comprehensive vault interaction capabilities
 
+## Installation
+
+> **Note**: This plugin is not yet available in the Obsidian Community Plugins store. You'll need to install it manually.
+
+### Manual Installation
+
+1. **Clone the repository into your vault's plugins directory:**
+   ```bash
+   cd /path/to/your/vault/.obsidian/plugins/
+   git clone https://github.com/admjs/obsidian-mcp.git
+   cd obsidian-mcp
+   ```
+
+2. **Install dependencies and build:**
+   ```bash
+   npm install
+   npm run build
+   ```
+
+3. **Enable the plugin:**
+   - Open Obsidian
+   - Go to Settings → Community Plugins
+   - Find "MCP Server" in the list and enable it
+
 ## Quick Setup
 
-### 1. Install the Plugin
-
-1. Download from Obsidian Community Plugins or install manually
-2. Enable the plugin in Obsidian settings
-
-### 2. Configure the Plugin
+### 1. Configure the Plugin
 
 1. Open Obsidian Settings → MCP Plugin
 2. Set a secure API key
 3. Enable and start the HTTP server
 4. Note the bridge script path (automatically configured)
 
-### 3. Configure Your MCP Client
+### 2. Configure Your MCP Client
 
 1. Click "Generate Configuration" in the plugin settings
 2. Copy the generated configuration
@@ -55,7 +74,7 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to conn
   "mcpServers": {
     "obsidian": {
       "command": "node",
-      "args": ["/path/to/obsidian-mcp-bridge.js"],
+      "args": ["/path/to/your/vault/.obsidian/plugins/obsidian-mcp/scripts/obsidian-mcp-bridge.js"],
       "env": {
         "OBSIDIAN_API_KEY": "your-api-key",
         "OBSIDIAN_VAULT_PATH": "/path/to/your/vault",
@@ -67,7 +86,7 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to conn
 }
 ```
 
-### 4. Restart Your MCP Client
+### 3. Restart Your MCP Client
 
 Restart Claude Desktop (or your MCP client) to load the new server configuration.
 
@@ -114,6 +133,12 @@ Restart Claude Desktop (or your MCP client) to load the new server configuration
 3. **"Bridge script not found"**
    - Use the "Reset to Default" button to restore the bridge script path
    - Ensure the bridge script file exists and is executable
+   - Make sure you copied the `scripts/` folder during installation
+
+4. **"Cannot find module" error in MCP client**
+   - Verify the bridge script path in your MCP client configuration
+   - Ensure Node.js is installed and accessible
+   - Make the bridge script executable: `chmod +x /path/to/bridge/script`
 
 ### Testing
 
@@ -128,18 +153,32 @@ Use the built-in test functions in the plugin settings:
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/admjs/obsidian-mcp.git
 cd obsidian-mcp
 
 # Install dependencies
 npm install
 
-# Build for development
+# Build for development (with hot reloading)
 npm run dev
 
 # Build for production
 npm run build
+
+# Run linting
+npm run lint
+
+# Clean build artifacts
+npm run clean
 ```
+
+### Development Workflow
+
+- `npm run dev` - Start development build with hot reloading
+- `npm run build` - Create production build
+- `npm run lint` - Check code quality
+- `npm run lint:fix` - Auto-fix linting issues
+- `npm run clean` - Remove build artifacts
 
 ### Architecture
 
@@ -164,6 +203,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - 📖 **Documentation**: Check the plugin settings for detailed setup instructions
-- 🐛 **Issues**: Report bugs on GitHub
+- 🐛 **Issues**: Report bugs on [GitHub Issues](https://github.com/admjs/obsidian-mcp/issues)
 - 💡 **Feature Requests**: Suggest improvements via GitHub issues
 - 🔧 **Support**: Use the built-in test functions for troubleshooting
+
+## Roadmap
+
+- [ ] Submit to Obsidian Community Plugins store
+- [ ] Add more MCP tool implementations
+- [ ] Improve auto-configuration detection
+- [ ] Add plugin marketplace integration
