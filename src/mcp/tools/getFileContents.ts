@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { ToolHandler, Content } from '../base';
 
 export class GetFileContentsToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class GetFileContentsToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Return the content of a single file in your vault.',

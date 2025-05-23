@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { ToolHandler, Content } from '../base';
 
 export class PeriodicNotesToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class PeriodicNotesToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Get current periodic note for the specified period.',
@@ -37,7 +37,6 @@ export class PeriodicNotesToolHandler extends ToolHandler {
             throw new Error(`Invalid period: ${args.period}. Must be one of: ${validPeriods.join(', ')}`);
         }
 
-        // Get the current date
         const now = new Date();
         let notePath: string;
 

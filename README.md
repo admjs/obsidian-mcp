@@ -1,74 +1,169 @@
-# Obsidian Boilerplate
+# Obsidian MCP Plugin
 
-A boilerplate template for developing Obsidian plugins with TypeScript, esbuild, and modern development tools.
+An Obsidian plugin that provides MCP (Model Context Protocol) server functionality, enabling external MCP clients like Claude Desktop to interact with your Obsidian vault.
 
 ## Features
 
-- 🚀 **TypeScript Support**: Full TypeScript integration for type-safe development
-- ⚡ **Fast Builds**: Uses esbuild for lightning-fast builds
-- 🛠 **Modern Tooling**: Includes ESLint, Prettier, and other modern development tools
-- 📦 **Easy Setup**: Simple installation and development workflow
-- 📝 **Documentation**: Comprehensive documentation and examples
+- 🔐 **Secure Authentication**: API key-based authentication for secure connections
+- 🌐 **HTTP Server**: Local HTTP server for MCP client communication
+- 🌉 **Bridge Script**: Included bridge script for seamless MCP protocol translation
+- ⚙️ **Auto-Configuration**: Automatic configuration generation for MCP clients
+- 🛠️ **Rich Tool Set**: Comprehensive tools for vault interaction
+- 🔄 **Real-time Communication**: Direct communication between MCP clients and Obsidian
 
-## Installation
+## What is MCP?
 
-1. Clone this repository:
-```bash
-git clone https://github.com/admjs/obsidian-boilerplate.git
-cd obsidian-boilerplate
+The Model Context Protocol (MCP) is a standardized way for AI assistants to connect to external data sources and tools. This plugin makes your Obsidian vault accessible to MCP-compatible AI clients like Claude Desktop.
+
+## Available Tools
+
+- **File Operations**: List files, read content, append content, delete files
+- **Search**: Simple text search and complex metadata-based search  
+- **Periodic Notes**: Access daily, weekly, and monthly notes
+- **Recent Changes**: Get recently modified files
+- **Vault Management**: Comprehensive vault interaction capabilities
+
+## Quick Setup
+
+### 1. Install the Plugin
+
+1. Download from Obsidian Community Plugins or install manually
+2. Enable the plugin in Obsidian settings
+
+### 2. Configure the Plugin
+
+1. Open Obsidian Settings → MCP Plugin
+2. Set a secure API key
+3. Enable and start the HTTP server
+4. Note the bridge script path (automatically configured)
+
+### 3. Configure Your MCP Client
+
+1. Click "Generate Configuration" in the plugin settings
+2. Copy the generated configuration
+3. Add it to your MCP client's configuration file
+
+#### For Claude Desktop:
+
+**Configuration file locations:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Example configuration:**
+```json
+{
+  "mcpServers": {
+    "obsidian": {
+      "command": "node",
+      "args": ["/path/to/obsidian-mcp-bridge.js"],
+      "env": {
+        "OBSIDIAN_API_KEY": "your-api-key",
+        "OBSIDIAN_VAULT_PATH": "/path/to/your/vault",
+        "OBSIDIAN_SERVER_PORT": "28734",
+        "OBSIDIAN_SERVER_HOST": "localhost"
+      }
+    }
+  }
+}
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+### 4. Restart Your MCP Client
 
-3. Start development server:
-```bash
-npm run dev
-```
+Restart Claude Desktop (or your MCP client) to load the new server configuration.
+
+## How It Works
+
+1. **Plugin HTTP Server**: The plugin runs a local HTTP server (default port 28734)
+2. **Bridge Script**: The included bridge script (`scripts/obsidian-mcp-bridge.js`) translates MCP protocol to HTTP API calls
+3. **MCP Client**: Your MCP client (like Claude Desktop) runs the bridge script as a subprocess
+4. **Communication Flow**: MCP Client ↔ Bridge Script ↔ HTTP Server ↔ Obsidian Plugin
+
+## Configuration Options
+
+### Basic Settings
+- **API Key**: Secure authentication key for HTTP server access
+- **HTTP Server Port**: Port for the local HTTP server (default: 28734)
+- **Bridge Script Path**: Path to the bridge script (auto-configured)
+
+### Server Controls
+- **Enable/Disable HTTP Server**: Toggle server on/off
+- **Server Status**: Real-time server status display
+- **Test Functions**: Built-in testing for server connectivity
+
+## Security
+
+- 🔒 **Local Only**: HTTP server only accepts connections from localhost
+- 🔑 **API Key Authentication**: All requests require valid API key
+- 🛡️ **Sandboxed**: Plugin runs within Obsidian's security context
+- 🔐 **No External Access**: No data leaves your local machine
+
+## Troubleshooting
+
+### Common Issues
+
+1. **"HTTP server test failed"**
+   - Ensure the HTTP server is running
+   - Check that your API key is set
+   - Verify the port is not blocked
+
+2. **"Failed to connect to Obsidian plugin"**
+   - Make sure Obsidian is running
+   - Verify the MCP plugin is enabled
+   - Check the API key in your MCP client configuration
+
+3. **"Bridge script not found"**
+   - Use the "Reset to Default" button to restore the bridge script path
+   - Ensure the bridge script file exists and is executable
+
+### Testing
+
+Use the built-in test functions in the plugin settings:
+- **Test MCP Server**: Verify the core MCP functionality
+- **Test HTTP Server**: Check HTTP server connectivity
+- **Show Available Tools**: Display all available tools and their schemas
 
 ## Development
 
-### Project Structure
-
-```
-obsidian-boilerplate/
-├── main.ts           # Main plugin code
-├── manifest.json     # Plugin manifest
-├── package.json      # Project configuration
-├── styles.css        # Plugin styles
-└── esbuild.config.mjs # Build configuration
-```
-
-### Available Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm run version` - Bump version and update manifest
-
-## Building for Production
-
-To build the plugin for production:
+### Building from Source
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd obsidian-mcp
+
+# Install dependencies
+npm install
+
+# Build for development
+npm run dev
+
+# Build for production
 npm run build
 ```
 
-This will create a production-ready build in the `dist` directory.
+### Architecture
+
+- **`src/main.ts`**: Main plugin file with settings and lifecycle management
+- **`src/mcp/server.ts`**: Core MCP server implementation
+- **`src/mcp/httpServer.ts`**: HTTP server for external communication
+- **`src/mcp/tools/`**: Individual tool implementations
+- **`scripts/obsidian-mcp-bridge.js`**: Bridge script for MCP protocol translation
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Author
-
-- Adam Smith ([@admjs](https://github.com/admjs))
-
 ## Support
 
-If you find this boilerplate helpful, please consider giving it a star on GitHub!
+- 📖 **Documentation**: Check the plugin settings for detailed setup instructions
+- 🐛 **Issues**: Report bugs on GitHub
+- 💡 **Feature Requests**: Suggest improvements via GitHub issues
+- 🔧 **Support**: Use the built-in test functions for troubleshooting

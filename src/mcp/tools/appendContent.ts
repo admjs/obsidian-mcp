@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { ToolHandler, Content } from '../base';
 
 export class AppendContentToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class AppendContentToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Append content to a new or existing file in the vault.',
@@ -46,12 +46,12 @@ export class AppendContentToolHandler extends ToolHandler {
             // File exists, append to it
             const existingContent = await this.app.vault.read(file);
             newContent = existingContent + '\n' + args.content;
+            await this.app.vault.modify(file, newContent);
         } else {
             // File doesn't exist, create it
             newContent = args.content;
+            await this.app.vault.create(args.filepath, newContent);
         }
-
-        await this.app.vault.create(args.filepath, newContent);
 
         return [{
             type: 'text',

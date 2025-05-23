@@ -1,5 +1,5 @@
-import { App, TFile, TFolder } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { App } from 'obsidian';
+import { ToolHandler, Content } from '../base';
 
 export class DeleteFileToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class DeleteFileToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Delete a file or directory from the vault.',

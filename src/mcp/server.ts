@@ -1,4 +1,5 @@
-import { App, TFile, TFolder } from 'obsidian';
+import { App } from 'obsidian';
+import { ToolHandler, Tool, Content } from './base';
 import { ListFilesInVaultToolHandler } from './tools/listFiles';
 import { GetFileContentsToolHandler } from './tools/getFileContents';
 import { SearchToolHandler } from './tools/search';
@@ -7,44 +8,6 @@ import { DeleteFileToolHandler } from './tools/deleteFile';
 import { ComplexSearchToolHandler } from './tools/complexSearch';
 import { PeriodicNotesToolHandler } from './tools/periodicNotes';
 import { RecentChangesToolHandler } from './tools/recentChanges';
-
-export interface Tool {
-    name: string;
-    description: string;
-    inputSchema: {
-        type: string;
-        properties: Record<string, any>;
-        required: string[];
-    };
-}
-
-export interface TextContent {
-    type: 'text';
-    text: string;
-}
-
-export interface ImageContent {
-    type: 'image';
-    url: string;
-}
-
-export interface EmbeddedResource {
-    type: 'embedded';
-    url: string;
-}
-
-export type Content = TextContent | ImageContent | EmbeddedResource;
-
-export abstract class ToolHandler {
-    public name: string;
-
-    constructor(name: string) {
-        this.name = name;
-    }
-
-    abstract getToolDescription(): Tool;
-    abstract runTool(args: any): Promise<Content[]>;
-}
 
 export class MCPServer {
     private app: App;
@@ -57,15 +20,21 @@ export class MCPServer {
     }
 
     private initializeTools() {
-        // Register all tool handlers
-        this.registerTool(new ListFilesInVaultToolHandler(this.app));
-        this.registerTool(new GetFileContentsToolHandler(this.app));
-        this.registerTool(new SearchToolHandler(this.app));
-        this.registerTool(new AppendContentToolHandler(this.app));
-        this.registerTool(new DeleteFileToolHandler(this.app));
-        this.registerTool(new ComplexSearchToolHandler(this.app));
-        this.registerTool(new PeriodicNotesToolHandler(this.app));
-        this.registerTool(new RecentChangesToolHandler(this.app));
+        try {
+            // Register all tool handlers
+            this.registerTool(new ListFilesInVaultToolHandler(this.app));
+            this.registerTool(new GetFileContentsToolHandler(this.app));
+            this.registerTool(new SearchToolHandler(this.app));
+            this.registerTool(new AppendContentToolHandler(this.app));
+            this.registerTool(new DeleteFileToolHandler(this.app));
+            this.registerTool(new ComplexSearchToolHandler(this.app));
+            this.registerTool(new PeriodicNotesToolHandler(this.app));
+            this.registerTool(new RecentChangesToolHandler(this.app));
+            
+            console.log(`MCP Server initialized with ${this.tools.size} tools`);
+        } catch (error) {
+            console.error('Error initializing MCP tools:', error);
+        }
     }
 
     private registerTool(handler: ToolHandler) {
@@ -93,4 +62,4 @@ export class MCPServer {
     public async handleToolCall(toolName: string, args: any): Promise<Content[]> {
         return this.callTool(toolName, args);
     }
-} 
+}

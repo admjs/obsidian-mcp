@@ -1,5 +1,5 @@
 import { App, TFile, TFolder } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { ToolHandler, Content } from '../base';
 
 export class ListFilesInVaultToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class ListFilesInVaultToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Lists all files and directories in the root directory of your Obsidian vault.',
@@ -23,6 +23,7 @@ export class ListFilesInVaultToolHandler extends ToolHandler {
 
     async runTool(args: any): Promise<Content[]> {
         const files = this.app.vault.getAllLoadedFiles();
+        
         const result = files.map(file => {
             if (file instanceof TFile) {
                 return {

@@ -1,5 +1,5 @@
-import { App, TFile } from 'obsidian';
-import { Tool, Content, TextContent, ToolHandler } from '../server';
+import { App } from 'obsidian';
+import { ToolHandler, Content } from '../base';
 
 export class RecentChangesToolHandler extends ToolHandler {
     private app: App;
@@ -9,7 +9,7 @@ export class RecentChangesToolHandler extends ToolHandler {
         this.app = app;
     }
 
-    getToolDescription(): Tool {
+    getToolDescription() {
         return {
             name: this.name,
             description: 'Get recent changes in the vault.',
@@ -36,37 +36,37 @@ export class RecentChangesToolHandler extends ToolHandler {
         const limit = args.limit || 10;
         const days = args.days || 90;
 
-        // Get all files in the vault
         const files = this.app.vault.getMarkdownFiles();
         const now = new Date();
-        const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+        const cutoffDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-        // Get file stats and filter by date
         const recentFiles = await Promise.all(
             files.map(async (file) => {
                 const stat = await this.app.vault.adapter.stat(file.path);
                 if (!stat) return null;
 
-                const mtime = new Date(stat.mtime);
-                if (mtime < cutoffDate) return null;
-
-                return {
-                    path: file.path,
-                    mtime: mtime.toISOString(),
-                    size: stat.size
-                };
+                const modifiedDate = new Date(stat.mtime);
+                
+                if (modifiedDate >= cutoffDate) {
+                    return {
+                        path: file.path,
+                        modifiedTime: modifiedDate.toISOString(),
+                        modifiedTimestamp: stat.mtime,
+                        size: stat.size
+                    };
+                }
+                return null;
             })
         );
 
-        // Sort by modification time and limit results
-        const changes = recentFiles
-            .filter(Boolean)
-            .sort((a, b) => new Date(b.mtime).getTime() - new Date(a.mtime).getTime())
+        const filtered = recentFiles
+            .filter((file): file is NonNullable<typeof file> => file !== null)
+            .sort((a, b) => b.modifiedTimestamp - a.modifiedTimestamp)
             .slice(0, limit);
 
         return [{
             type: 'text',
-            text: JSON.stringify(changes, null, 2)
+            text: JSON.stringify(filtered, null, 2)
         }];
     }
 } 
