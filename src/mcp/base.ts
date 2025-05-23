@@ -8,6 +8,28 @@ export interface Tool {
     };
 }
 
+export interface PromptArgument {
+    name: string;
+    description?: string;
+    required?: boolean;
+}
+
+export interface Prompt {
+    name: string;
+    description?: string;
+    arguments?: PromptArgument[];
+}
+
+export interface PromptMessage {
+    role: 'user' | 'assistant' | 'system';
+    content: TextContent;
+}
+
+export interface GetPromptResult {
+    description?: string;
+    messages: PromptMessage[];
+}
+
 export interface TextContent {
     type: 'text';
     text: string;

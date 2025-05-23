@@ -90,6 +90,7 @@ function makeObsidianRequest(path, method = 'GET', data = null) {
 class ObsidianMCPServer {
     constructor() {
         this.tools = null;
+        this.prompts = null;
     }
 
     async initialize() {
@@ -97,6 +98,16 @@ class ObsidianMCPServer {
             // Get available tools from Obsidian plugin
             this.tools = await makeObsidianRequest('/api/mcp/tools');
             console.error(`Loaded ${this.tools.length} tools from Obsidian`);
+            
+            // Get available prompts from Obsidian plugin
+            try {
+                const promptsResponse = await makeObsidianRequest('/api/mcp/prompts');
+                this.prompts = promptsResponse.prompts || [];
+                console.error(`Loaded ${this.prompts.length} prompts from Obsidian`);
+            } catch (error) {
+                console.error('Warning: Could not load prompts (this is normal for older plugin versions):', error.message);
+                this.prompts = [];
+            }
         } catch (error) {
             console.error('Failed to connect to Obsidian plugin:', error.message);
             console.error('Make sure:');
@@ -122,7 +133,8 @@ class ObsidianMCPServer {
                 return {
                     protocolVersion: "2024-11-05",
                     capabilities: {
-                        tools: {}
+                        tools: {},
+                        prompts: {}
                     },
                     serverInfo: {
                         name: "obsidian-mcp-bridge",
@@ -150,6 +162,25 @@ class ObsidianMCPServer {
                 return {
                     content: toolResult.content || []
                 };
+            
+            case 'prompts/list':
+                console.error('[MCP] Sending prompts list');
+                return {
+                    prompts: this.prompts || []
+                };
+            
+            case 'prompts/get':
+                if (!request.params || !request.params.name) {
+                    throw new Error('Missing prompt name in prompts/get request');
+                }
+                
+                console.error(`[MCP] Getting prompt: ${request.params.name}`);
+                const promptResult = await makeObsidianRequest('/api/mcp/prompts/get', 'POST', {
+                    name: request.params.name,
+                    arguments: request.params.arguments || {}
+                });
+                
+                return promptResult;
                 
             case 'notifications/initialized':
                 // Handle initialization notification (no response needed)

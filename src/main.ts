@@ -9,6 +9,8 @@ interface MCPPluginSettings {
     httpServerEnabled: boolean;
     httpServerPort: number;
     bridgeScriptPath: string;
+    templatesDir: string;
+    systemPrompt: string;
 }
 
 const DEFAULT_SETTINGS: MCPPluginSettings = {
@@ -16,7 +18,29 @@ const DEFAULT_SETTINGS: MCPPluginSettings = {
     port: 3000,
     httpServerEnabled: true,
     httpServerPort: 28734,
-    bridgeScriptPath: ''
+    bridgeScriptPath: '',
+    templatesDir: 'Templates',
+    systemPrompt: `You are an AI assistant with access to an Obsidian vault through MCP tools. Here are some guidelines for interacting with this vault:
+
+## Style & Behavior:
+- Be helpful, concise, and respectful of the user's knowledge management workflow
+- When creating or modifying notes, follow consistent markdown formatting
+- Use appropriate heading levels, bullet points, and formatting for readability
+- Respect existing note structures and naming conventions when possible
+
+## Working with Notes:
+- Always check if files exist before creating new ones to avoid duplicates
+- When creating daily/periodic notes, use the structured templates provided
+- For search operations, try multiple approaches if initial searches don't yield results
+- When appending content, consider the existing structure and add appropriate spacing
+
+## Best Practices:
+- Suggest meaningful file names and organize content logically
+- Use tags and links to maintain vault connectivity
+- When uncertain about user preferences, ask for clarification
+- Prioritize accuracy and useful organization over speed
+
+Feel free to customize this prompt to match your specific workflow and preferences.`
 }
 
 export default class MCPPlugin extends Plugin {
@@ -34,7 +58,7 @@ export default class MCPPlugin extends Plugin {
             await this.loadSettings();
             
             // Initialize MCPServer after settings are loaded
-            this.mcpServer = new MCPServer(this.app);
+            this.mcpServer = new MCPServer(this.app, this.settings.templatesDir, () => this.settings.systemPrompt);
 
             // Always refresh bridge script path on load to ensure it's correct
             const detectedBridgePath = this.getBridgeScriptPath();
@@ -357,6 +381,20 @@ export default class MCPPlugin extends Plugin {
         }
     }
 
+    // Update templates directory in MCP server
+    public updateTemplatesDir(): void {
+        if (this.mcpServer) {
+            this.mcpServer.updateTemplatesDir(this.settings.templatesDir);
+        }
+    }
+
+    // Update system prompt in MCP server
+    public updateSystemPrompt(): void {
+        if (this.mcpServer) {
+            this.mcpServer.updateSystemPromptGetter(() => this.settings.systemPrompt);
+        }
+    }
+
     // Debug method to help identify correct paths
     public getPathDebugInfo(): string {
         const debugInfo = [];
@@ -435,6 +473,102 @@ class MCPSettingTab extends PluginSettingTab {
                     this.plugin.settings.apiKey = value;
                     await this.plugin.saveSettings();
                     await this.plugin.updateHttpServerSettings();
+                }));
+
+        // Templates Section
+        containerEl.createEl('h3', {text: 'Templates Configuration'});
+
+        new Setting(containerEl)
+            .setName('Templates Directory')
+            .setDesc('Directory path where templates are stored (relative to vault root, e.g., "Templates")')
+            .addText(text => text
+                .setPlaceholder('Templates')
+                .setValue(this.plugin.settings.templatesDir)
+                .onChange(async (value) => {
+                    this.plugin.settings.templatesDir = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.updateTemplatesDir();
+                }));
+
+        // System Prompt Section
+        containerEl.createEl('h3', {text: 'AI System Prompt'});
+
+        const systemPromptDesc = containerEl.createEl('p', {
+            text: 'Configure the system prompt that guides AI interactions with your vault. This prompt is exposed to MCP clients and helps define how the AI should behave when working with your Obsidian vault.'
+        });
+        systemPromptDesc.style.marginBottom = '10px';
+        systemPromptDesc.style.fontSize = '14px';
+        systemPromptDesc.style.color = 'var(--text-muted)';
+
+        new Setting(containerEl)
+            .setName('System Prompt')
+            .setDesc('The system prompt that will be available to MCP clients like Claude Desktop')
+            .addTextArea(text => {
+                text.setPlaceholder('Enter your system prompt...')
+                    .setValue(this.plugin.settings.systemPrompt)
+                    .onChange(async (value) => {
+                        this.plugin.settings.systemPrompt = value;
+                        await this.plugin.saveSettings();
+                        this.plugin.updateSystemPrompt();
+                    });
+                
+                // Style the textarea for full width and better usability
+                text.inputEl.style.width = '100%';
+                text.inputEl.style.height = '400px'; // Even larger height for editing system prompts
+                text.inputEl.style.fontFamily = 'var(--font-monospace)';
+                text.inputEl.style.fontSize = '13px'; // Slightly larger font
+                text.inputEl.style.resize = 'vertical';
+                text.inputEl.style.marginTop = '10px';
+                text.inputEl.style.padding = '12px'; // More comfortable padding
+                text.inputEl.style.lineHeight = '1.5'; // Better line spacing for readability
+                
+                // Override the Setting component's layout constraints
+                const settingEl = text.inputEl.closest('.setting-item') as HTMLElement;
+                if (settingEl) {
+                    settingEl.style.display = 'block';
+                    const controlEl = settingEl.querySelector('.setting-item-control') as HTMLElement;
+                    if (controlEl) {
+                        controlEl.style.width = '100%';
+                        controlEl.style.maxWidth = 'none';
+                    }
+                }
+                
+                return text;
+            });
+
+        new Setting(containerEl)
+            .setName('Reset to Default Prompt')
+            .setDesc('Reset the system prompt to the default template')
+            .addButton(button => button
+                .setButtonText('Reset to Default')
+                .onClick(async () => {
+                    // Get the default prompt from DEFAULT_SETTINGS
+                    const defaultPrompt = `You are an AI assistant with access to an Obsidian vault through MCP tools. Here are some guidelines for interacting with this vault:
+
+## Style & Behavior:
+- Be helpful, concise, and respectful of the user's knowledge management workflow
+- When creating or modifying notes, follow consistent markdown formatting
+- Use appropriate heading levels, bullet points, and formatting for readability
+- Respect existing note structures and naming conventions when possible
+
+## Working with Notes:
+- Always check if files exist before creating new ones to avoid duplicates
+- When creating daily/periodic notes, use the structured templates provided
+- For search operations, try multiple approaches if initial searches don't yield results
+- When appending content, consider the existing structure and add appropriate spacing
+
+## Best Practices:
+- Suggest meaningful file names and organize content logically
+- Use tags and links to maintain vault connectivity
+- When uncertain about user preferences, ask for clarification
+- Prioritize accuracy and useful organization over speed
+
+Feel free to customize this prompt to match your specific workflow and preferences.`;
+                    
+                    this.plugin.settings.systemPrompt = defaultPrompt;
+                    await this.plugin.saveSettings();
+                    this.plugin.updateSystemPrompt();
+                    this.display(); // Refresh the settings display
                 }));
 
         // HTTP Server Section
@@ -621,6 +755,57 @@ class MCPSettingTab extends PluginSettingTab {
                     }
                 }));
 
+        new Setting(containerEl)
+            .setName('Test System Prompt')
+            .setDesc('Test the system prompt functionality')
+            .addButton(button => button
+                .setButtonText('Test Prompt')
+                .onClick(async () => {
+                    if (!this.plugin.httpServer?.isServerRunning()) {
+                        new Notice('HTTP server is not running');
+                        return;
+                    }
+
+                    try {
+                        // Test prompts list endpoint
+                        const listResponse = await fetch(`http://localhost:${this.plugin.settings.httpServerPort}/api/mcp/prompts`, {
+                            headers: {
+                                'Authorization': `Bearer ${this.plugin.settings.apiKey}`
+                            }
+                        });
+                        
+                        if (listResponse.ok) {
+                            const listData = await listResponse.json();
+                            console.log('Available prompts:', listData);
+                            
+                            // Test getting the system prompt
+                            const getResponse = await fetch(`http://localhost:${this.plugin.settings.httpServerPort}/api/mcp/prompts/get`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${this.plugin.settings.apiKey}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    name: 'obsidian-system-prompt'
+                                })
+                            });
+                            
+                            if (getResponse.ok) {
+                                const promptData = await getResponse.json();
+                                new Notice('System prompt is working! Check console for details.');
+                                console.log('System prompt response:', promptData);
+                            } else {
+                                new Notice(`System prompt test failed: ${getResponse.status}`);
+                            }
+                        } else {
+                            new Notice(`Prompts list test failed: ${listResponse.status}`);
+                        }
+                    } catch (error) {
+                        new Notice('System prompt test failed: ' + error.message);
+                        console.error('System prompt test failed:', error);
+                    }
+                }));
+
         // Client Configuration Section
         containerEl.createEl('h3', {text: 'Client Configuration'});
         
@@ -795,6 +980,7 @@ class MCPSettingTab extends PluginSettingTab {
             <h4>Quick Setup for Claude Desktop:</h4>
             <ol>
                 <li><strong>Set API Key:</strong> Create a secure API key in the settings above</li>
+                <li><strong>Configure System Prompt:</strong> Customize the AI system prompt above to match your workflow preferences</li>
                 <li><strong>Start HTTP Server:</strong> Enable and start the HTTP server</li>
                 <li><strong>Generate Configuration:</strong> Click "Generate Configuration" to create the config with auto-detected paths</li>
                 <li><strong>Update Claude Desktop:</strong>
@@ -807,6 +993,14 @@ class MCPSettingTab extends PluginSettingTab {
                 </li>
                 <li><strong>Restart Claude Desktop</strong> to load the new MCP server</li>
             </ol>
+            
+            <h4>Using the System Prompt:</h4>
+            <p>Once configured, Claude Desktop will have access to the "Obsidian System Prompt" which you can use by:</p>
+            <ul>
+                <li>Typing <code>/obsidian-system-prompt</code> in Claude Desktop</li>
+                <li>This loads your custom system prompt to guide AI interactions with your vault</li>
+                <li>The prompt helps maintain consistent behavior and follows your preferences</li>
+            </ul>
             
             <h4>Claude Desktop config file locations:</h4>
             <ul>

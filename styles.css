@@ -6,3 +6,43 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+/* Full width system prompt textarea styling */
+.setting-item .setting-item-control textarea {
+    box-sizing: border-box;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.setting-item .setting-item-control textarea:focus {
+    border-color: var(--interactive-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Ensure system prompt setting takes full width */
+.setting-item:has(textarea[placeholder*="system prompt"]) {
+    display: block !important;
+    margin-bottom: 20px;
+}
+
+.setting-item:has(textarea[placeholder*="system prompt"]) .setting-item-control {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+}
+
+.setting-item:has(textarea[placeholder*="system prompt"]) .setting-item-info {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+/* Better responsive design */
+@media (max-width: 768px) {
+    .setting-item:has(textarea[placeholder*="system prompt"]) textarea {
+        font-size: 14px !important;
+        height: 300px !important;
+    }
+}

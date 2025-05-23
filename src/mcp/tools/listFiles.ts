@@ -12,7 +12,7 @@ export class ListFilesInVaultToolHandler extends ToolHandler {
     getToolDescription() {
         return {
             name: this.name,
-            description: 'Lists all files and directories in the root directory of your Obsidian vault.',
+            description: 'Lists all files and directories in the root directory of your Obsidian vault. Note: Call obsidian_init_required first if you haven\'t already.',
             inputSchema: {
                 type: 'object',
                 properties: {},
@@ -41,9 +41,11 @@ export class ListFilesInVaultToolHandler extends ToolHandler {
             return null;
         }).filter(Boolean);
 
-        return [{
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
-        }];
+        return [
+            {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
+            }
+        ];
     }
 } 

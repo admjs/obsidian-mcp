@@ -31,8 +31,8 @@ export class ComplexSearchToolHandler extends ToolHandler {
             throw new Error('query argument missing in arguments');
         }
 
-        const maxResults = 20;
-        const maxFiles = 500;
+        const maxResults = 50;
+        const maxFiles = 5000;
         
         console.log(`[ComplexSearch] Starting search with query:`, args.query);
         
@@ -92,8 +92,10 @@ export class ComplexSearchToolHandler extends ToolHandler {
 
                     // For now, using simple search as a fallback
                     // In the future, this could be enhanced with actual JSON Logic
-                    const search = prepareSimpleSearch(JSON.stringify(args.query));
-                    const result = search(content);
+                    // Convert query to lowercase for case-insensitive search
+                    const search = prepareSimpleSearch(JSON.stringify(args.query).toLowerCase());
+                    // Convert content to lowercase for case-insensitive search
+                    const result = search(content.toLowerCase());
                     
                     if (result) {
                         results.push({

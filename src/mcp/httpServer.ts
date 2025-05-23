@@ -105,6 +105,10 @@ export class MCPHttpServer {
             await this.handleListTools(req, res);
         } else if (path === '/api/mcp/tools/call' && req.method === 'POST') {
             await this.handleCallTool(req, res);
+        } else if (path === '/api/mcp/prompts' && req.method === 'GET') {
+            await this.handleListPrompts(req, res);
+        } else if (path === '/api/mcp/prompts/get' && req.method === 'POST') {
+            await this.handleGetPrompt(req, res);
         } else if (path === '/api/mcp/health' && req.method === 'GET') {
             await this.handleHealth(req, res);
         } else {
@@ -137,6 +141,34 @@ export class MCPHttpServer {
         } catch (error) {
             console.error('Error calling tool:', error);
             this.sendErrorResponse(res, 500, error.message || 'Failed to call tool');
+        }
+    }
+
+    private async handleListPrompts(req: any, res: any): Promise<void> {
+        try {
+            const prompts = await this.mcpServer.listPrompts();
+            this.sendJsonResponse(res, 200, { prompts });
+        } catch (error) {
+            console.error('Error listing prompts:', error);
+            this.sendErrorResponse(res, 500, 'Failed to list prompts');
+        }
+    }
+
+    private async handleGetPrompt(req: any, res: any): Promise<void> {
+        try {
+            const body = await this.readRequestBody(req);
+            const { name, arguments: args } = JSON.parse(body);
+
+            if (!name) {
+                this.sendErrorResponse(res, 400, 'Missing prompt name');
+                return;
+            }
+
+            const result = await this.mcpServer.getPrompt(name, args || {});
+            this.sendJsonResponse(res, 200, result);
+        } catch (error) {
+            console.error('Error getting prompt:', error);
+            this.sendErrorResponse(res, 500, error.message || 'Failed to get prompt');
         }
     }
 

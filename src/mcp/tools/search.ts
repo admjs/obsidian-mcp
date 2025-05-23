@@ -26,7 +26,7 @@ export class SearchToolHandler extends ToolHandler {
     getToolDescription() {
         return {
             name: this.name,
-            description: 'Simple search for documents matching a specified text query across files in the vault.',
+            description: 'Simple search for documents matching a specified text query across files in the vault. Note: Call obsidian_init_required first if you haven\'t already.',
             inputSchema: {
                 type: 'object',
                 properties: {
@@ -36,18 +36,18 @@ export class SearchToolHandler extends ToolHandler {
                     },
                     context_length: {
                         type: 'integer',
-                        description: 'How much context to return around the matching string (default: 100)',
-                        default: 100
+                        description: 'How much context to return around the matching string (default: 500)',
+                        default: 500
                     },
                     max_results: {
                         type: 'integer',
-                        description: 'Maximum number of results to return (default: 20)',
-                        default: 20
+                        description: 'Maximum number of results to return (default: 50)',
+                        default: 50
                     },
                     max_files: {
                         type: 'integer',
-                        description: 'Maximum number of files to search (default: 500)',
-                        default: 500
+                        description: 'Maximum number of files to search (default: 5000)',
+                        default: 5000
                     }
                 },
                 required: ['query']
@@ -60,14 +60,15 @@ export class SearchToolHandler extends ToolHandler {
             throw new Error('query argument missing in arguments');
         }
 
-        const contextLength = args.context_length || 100;
-        const maxResults = args.max_results || 20;
-        const maxFiles = args.max_files || 500;
+        const contextLength = args.context_length || 500;
+        const maxResults = args.max_results || 50;
+        const maxFiles = args.max_files || 5000;
         
         console.log(`[Search] Starting search for: "${args.query}"`);
         console.log(`[Search] Limits: ${maxResults} results, ${maxFiles} files, ${contextLength} context`);
         
-        const search = prepareSimpleSearch(args.query);
+        // Convert query to lowercase for case-insensitive search
+        const search = prepareSimpleSearch(args.query.toLowerCase());
         const results: SearchResultItem[] = [];
         const allFiles = this.app.vault.getMarkdownFiles();
         
@@ -80,7 +81,7 @@ export class SearchToolHandler extends ToolHandler {
         let filesProcessed = 0;
         
         // Process files in batches to avoid blocking
-        const batchSize = 10;
+        const batchSize = 50;
         for (let i = 0; i < filesToSearch.length; i += batchSize) {
             const batch = filesToSearch.slice(i, i + batchSize);
             
@@ -95,7 +96,8 @@ export class SearchToolHandler extends ToolHandler {
                     }
                     
                     const content = await this.app.vault.cachedRead(file);
-                    const result = search(content);
+                    // Convert content to lowercase for case-insensitive search
+                    const result = search(content.toLowerCase());
                     
                     if (result) {
                         const matches = [];
